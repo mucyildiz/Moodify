@@ -1,6 +1,10 @@
 const passport = require('passport');
+const fetch = require('node-fetch');
+const keys = require('../config/keys.js')
+
 
 module.exports = (app) => {
+
     app.get('/', (req, res) => {
         res.send({hi: 'yeah yeah'});
     })
@@ -8,7 +12,7 @@ module.exports = (app) => {
     app.get(
         '/auth/spotify',
         passport.authenticate('spotify', {
-            scope: ['user-top-read']
+            scope: ['user-library-read']
         })
     );
 
@@ -16,7 +20,7 @@ module.exports = (app) => {
         '/auth/spotify/callback',
         passport.authenticate('spotify'), 
         (req, res) => {
-            res.send(req.user);
+            res.send(req.user)
         }
     );
 
@@ -24,11 +28,7 @@ module.exports = (app) => {
         '/api/logout', (req, res) => {
             req.session = null;
             req.logout();
-            res.redirect('/api/current_user')
+            res.redirect('/')
         }
     )
-
-    app.get('/api/current_user', (req, res) => {
-        res.send("hi");
-    })
 }
