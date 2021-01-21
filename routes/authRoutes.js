@@ -12,15 +12,24 @@ module.exports = (app) => {
     app.get(
         '/auth/spotify',
         passport.authenticate('spotify', {
-            scope: ['user-library-read']
+            scope: ['user-top-read']
         })
     );
 
     app.get(
         '/auth/spotify/callback',
         passport.authenticate('spotify'), 
-        (req, res) => {
-            res.send(req.session)
+        async (req, res) => {
+            console.log(req);
+            const response = await fetch('https://api.spotify.com/v1/me/top/tracks', {
+                method: 'get',
+                headers: {
+                    'Authorization': 'Bearer ' + req.session.token,
+                }
+            })
+            const json = await response.json();
+            res.send(json);
+            
         }
     );
 
