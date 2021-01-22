@@ -12,8 +12,8 @@ const app = express();
 
 app.use(cookieSession({
     name: 'session',
-    keys: ['key1', 'key2']
-  }))
+    keys: [keys.cookieKey, keys.cookieKeyTwo]
+}))
 
 app.use(passport.initialize());
 app.use(passport.session());

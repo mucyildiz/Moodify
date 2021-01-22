@@ -2,6 +2,7 @@ const passport = require('passport');
 const fetch = require('node-fetch');
 const keys = require('../config/keys.js');
 const CryptoJS = require('crypto-js');
+const { gatherPotentialSongs } = require('../logic/createPlaylist.js');
 
 
 
@@ -14,7 +15,7 @@ module.exports = (app) => {
     app.get(
         '/auth/spotify',
         passport.authenticate('spotify', {
-            scope: ['user-top-read']
+            scope: ['user-top-read', 'user-library-read', 'playlist-modify-public']
         })
     );
 
@@ -22,16 +23,8 @@ module.exports = (app) => {
         '/auth/spotify/callback',
         passport.authenticate('spotify'), 
         async (req, res) => {
-            console.log(req.session);
-            const response = await fetch('https://api.spotify.com/v1/me/top/tracks', {
-                method: 'get',
-                headers: {
-                    'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(req.session.token, keys.passphrase).toString(CryptoJS.enc.Utf8),
-                }
-            })
-            const json = await response.json();
-            res.send(json);
-            
+            gatherPotentialSongs(req.session.token)
+            res.redirect('/');
         }
     );
 
