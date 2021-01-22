@@ -2,6 +2,7 @@ const passport = require('passport');
 const SpotifyStrategy = require('passport-spotify').Strategy;
 const keys = require('../config/keys');
 const mongoose = require('mongoose');
+const CryptoJS = require('crypto-js');
 
 const User = mongoose.model('users');
 
@@ -25,7 +26,7 @@ passport.use(
         passReqToCallback: true
     },
     async (req, accessToken, refreshToken, profile, done) => {
-        req.session = { token: accessToken };
+        req.session.token = CryptoJS.AES.encrypt(accessToken, keys.passphrase).toString();
 
         const existingUser = await User.findOne({ spotifyId: profile.id });
 

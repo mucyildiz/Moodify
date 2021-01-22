@@ -1,6 +1,8 @@
 const passport = require('passport');
 const fetch = require('node-fetch');
-const keys = require('../config/keys.js')
+const keys = require('../config/keys.js');
+const CryptoJS = require('crypto-js');
+
 
 
 module.exports = (app) => {
@@ -20,11 +22,11 @@ module.exports = (app) => {
         '/auth/spotify/callback',
         passport.authenticate('spotify'), 
         async (req, res) => {
-            console.log(req);
+            console.log(req.session);
             const response = await fetch('https://api.spotify.com/v1/me/top/tracks', {
                 method: 'get',
                 headers: {
-                    'Authorization': 'Bearer ' + req.session.token,
+                    'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(req.session.token, keys.passphrase).toString(CryptoJS.enc.Utf8),
                 }
             })
             const json = await response.json();

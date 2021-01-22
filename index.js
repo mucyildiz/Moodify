@@ -10,6 +10,10 @@ mongoose.connect(keys.mongoURI, { useUnifiedTopology: true, useNewUrlParser: tru
 
 const app = express();
 
+app.use(cookieSession({
+    name: 'session',
+    keys: ['key1', 'key2']
+  }))
 
 app.use(passport.initialize());
 app.use(passport.session());
