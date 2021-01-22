@@ -2,7 +2,7 @@ const passport = require('passport');
 const fetch = require('node-fetch');
 const keys = require('../config/keys.js');
 const CryptoJS = require('crypto-js');
-const { getUserTopArtists, getUserTracks, getUserTopTracks, getUserRecommendations } = require('../logic/createPlaylist.js');
+const { getUserTopArtists, getUserTracks, getUserTopTracks, getUserRecommendations, getSongsThatFitMoodFromUserLibrary } = require('../logic/createPlaylist.js');
 
 
 
@@ -23,7 +23,7 @@ module.exports = (app) => {
         '/auth/spotify/callback',
         passport.authenticate('spotify'), 
         async (req, res) => {
-            getUserRecommendations(req.session.token);
+            getSongsThatFitMoodFromUserLibrary(req.session.token, 'sad');
             res.redirect('/');
         }
     );
