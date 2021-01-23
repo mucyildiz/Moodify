@@ -1,5 +1,4 @@
 const Sentiment = require('sentiment');
-const fetch = require('node-fetch');
 const sentiment = new Sentiment();
 const keys = require('../config/keys.js');
 const CryptoJS = require('crypto-js');

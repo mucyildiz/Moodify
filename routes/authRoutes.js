@@ -1,8 +1,4 @@
 const passport = require('passport');
-const fetch = require('node-fetch');
-const keys = require('../config/keys.js');
-const CryptoJS = require('crypto-js');
-const { getPlaylistTracks, createPlaylist } = require('../logic/createPlaylist.js');
 
 
 
@@ -13,10 +9,13 @@ module.exports = (app) => {
     })
 
     app.get(
-        '/auth/spotify',
+        '/auth/spotify', (req, res) => {
+            console.log('here');
         passport.authenticate('spotify', {
-            scope: ['user-top-read', 'user-library-read', 'playlist-modify-public']
+            scope: ['user-top-read', 'user-library-read', 'playlist-modify-public'],
+            showDialog: true
         })
+    }
     );
 
     app.get(
@@ -27,10 +26,9 @@ module.exports = (app) => {
     );
 
     app.get(
-        '/api/createplaylist',
-        async (req, res) => {
-            createPlaylist(req.session.token, 'happy', 'testing code pls work', req.user.spotifyId);
-            res.redirect('/done');
+        '/api/getToken',
+        (req, res) => {
+            res.send(req.session.token);
         }
     )
 
