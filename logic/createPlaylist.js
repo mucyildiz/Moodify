@@ -175,6 +175,7 @@ const getPlaylistTracks = async (token, phrase) => {
 
     const playlistSongs = recommendations.concat(libSongs);
     const shuffledPlaylistSongs = shuffle(playlistSongs);
+    console.log(shuffledPlaylistSongs);
     return shuffledPlaylistSongs;
 }
 
@@ -202,7 +203,7 @@ const createPlaylist = async (token, phrase, playlistName, user) => {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            "uris": tracks,
+
         })
     })
 }
