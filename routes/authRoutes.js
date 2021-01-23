@@ -21,12 +21,24 @@ module.exports = (app) => {
 
     app.get(
         '/auth/spotify/callback',
-        passport.authenticate('spotify'), 
-        async (req, res) => {
-            createPlaylist(req.session.token, 'sad', 'test', req.user.spotifyId);
-            res.redirect('/');
-        }
+        passport.authenticate('spotify'),
+        (req, res) => 
+        res.redirect('/')
     );
+
+    app.get(
+        '/api/createplaylist',
+        async (req, res) => {
+            createPlaylist(req.session.token, 'happy', 'testing code pls work', req.user.spotifyId);
+            res.redirect('/done');
+        }
+    )
+
+    app.get(
+        '/done', (req, res) => {
+            res.send("Playlist created")
+        }
+    )
 
     app.get(
         '/api/logout', (req, res) => {
