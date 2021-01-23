@@ -1,5 +1,5 @@
 import './App.css';
-import { BrowserRouter, Route } from 'react-router-dom';
+import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import axios from 'axios';
 import { createPlaylist } from '../logic/createPlaylist';
 import Login from './Login';
@@ -8,16 +8,16 @@ import React, { useState } from 'react';
 const App = () => {
   const [token, setToken] = useState('');
 
-  if(!token){
-    return (
-      <Login setToken={setToken}/>
-    )
-  }
+          
 
   return (
     <BrowserRouter>
       <div>
-        <button>est token</button>
+        <Route exact path='/'>
+          {token ? <button>est token</button> : <Redirect to='/login' />}
+        </Route>
+        <Route exact path="/login" render={() => <Login setToken={setToken}/>} />
+        
       </div>
     </BrowserRouter>
   );

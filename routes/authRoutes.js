@@ -9,13 +9,11 @@ module.exports = (app) => {
     })
 
     app.get(
-        '/auth/spotify', (req, res) => {
-            console.log('here');
+        '/auth/spotify',
         passport.authenticate('spotify', {
             scope: ['user-top-read', 'user-library-read', 'playlist-modify-public'],
             showDialog: true
         })
-    }
     );
 
     app.get(
