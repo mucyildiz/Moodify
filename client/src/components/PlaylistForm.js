@@ -17,10 +17,6 @@ const PlaylistForm = () => {
 
         const id = user.data.id;
         const tokenData = token.data;
-        console.log('called in PlayListForm.js', tokenData)
-        const passphrase = await axios.get('api/getpassphrase');
-        const phrase = passphrase.data;
-        console.log('passphrase in frontend', phrase);
 
         createPlaylist(tokenData, mood, playlistName, id);
     }
@@ -31,7 +27,6 @@ const PlaylistForm = () => {
 
     const updateMood = (e) => {
         setMood(e.target.value)
-        console.log(mood);
     }
 
     return (
