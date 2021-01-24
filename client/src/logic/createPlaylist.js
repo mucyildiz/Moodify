@@ -177,7 +177,7 @@ const getPlaylistTracks = async (token, phrase) => {
     return shuffledPlaylistSongs;
 }
 
-const createPlaylist = async (token, phrase, playlistName, user) => {
+export const createPlaylist = async (token, phrase, playlistName, user) => {
     let tracks = await getPlaylistTracks(token, phrase);
     if(tracks.length > 100){
         tracks = getRandom(tracks, 100);
@@ -205,7 +205,3 @@ const createPlaylist = async (token, phrase, playlistName, user) => {
         })
     })
 }
-
-
-
-module.exports = { createPlaylist }
