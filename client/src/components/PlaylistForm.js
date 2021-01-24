@@ -17,6 +17,7 @@ const PlaylistForm = () => {
 
         const id = user.data.id;
         const tokenData = token.data;
+        console.log('called in PlayListForm.js', tokenData)
 
         createPlaylist(tokenData, mood, playlistName, id);
     }

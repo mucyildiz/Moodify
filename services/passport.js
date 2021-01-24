@@ -21,7 +21,9 @@ passport.use(
         passReqToCallback: true
     },
     async (req, accessToken, refreshToken, profile, done) => {
+        console.log('before encrypting', accessToken);
         req.session.token = CryptoJS.AES.encrypt(accessToken, keys.passphrase).toString();
+        console.log('after encryption', req.session.token);
         done(null, {spotifyId: profile.id})
     }
 ));
