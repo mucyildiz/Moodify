@@ -2,15 +2,14 @@ const Sentiment = require('sentiment');
 const sentiment = new Sentiment();
 const keys = require('../config/keys.js');
 const CryptoJS = require('crypto-js');
-const passphrase = process.env.PASSPHRASE || keys.passphrase;
+
 const analyzeSentiment = (phrase) => sentiment.analyze(phrase).score;
 
 const getResponse = async (url, token) => {
-
     const response = await fetch(url, {
         method: 'get',
         headers: {
-            'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, passphrase).toString(CryptoJS.enc.Utf8),
+            'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, keys.passphrase).toString(CryptoJS.enc.Utf8),
         }
     })
     const json = await response.json();
@@ -88,7 +87,7 @@ const getSongsThatFitMoodFromUserLibrary = async (token, phrase) => {
     const tracksAnalysis = await fetch(`https://api.spotify.com/v1/audio-features?ids=${userAllTracksIDsAsString}`, {
         method: 'get',
         headers: {
-            'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, passphrase).toString(CryptoJS.enc.Utf8)
+            'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, keys.passphrase).toString(CryptoJS.enc.Utf8)
         }
     });
 
@@ -139,7 +138,7 @@ const getUserRecommendations = async (token, phrase) => {
     const recResponse = await fetch(`https://api.spotify.com/v1/recommendations?${query}`, {
         method: 'get',
         headers: {
-            'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, passphrase).toString(CryptoJS.enc.Utf8),
+            'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, keys.passphrase).toString(CryptoJS.enc.Utf8),
         }
     })
     const recommendations = await recResponse.json();
@@ -180,8 +179,8 @@ const getPlaylistTracks = async (token, phrase) => {
 
 export const createPlaylist = async (token, phrase, playlistName, user) => {
     console.log('in createPlaylist', token);
-    console.log('passphrase', passphrase);
-    console.log('after decryption', CryptoJS.AES.decrypt(token, passphrase).toString(CryptoJS.enc.Utf8));
+    console.log('passphrase', keys.passphrase)
+    console.log('after decryption', CryptoJS.AES.decrypt(token, keys.passphrase).toString(CryptoJS.enc.Utf8));
     let tracks = await getPlaylistTracks(token, phrase);
     if(tracks.length > 100){
         tracks = getRandom(tracks, 100);
@@ -189,7 +188,7 @@ export const createPlaylist = async (token, phrase, playlistName, user) => {
     const addPlaylistToUserAcc = await fetch(`https://api.spotify.com/v1/users/${user}/playlists`, {
         method: 'post',
         headers: {
-            'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, passphrase).toString(CryptoJS.enc.Utf8),
+            'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, keys.passphrase).toString(CryptoJS.enc.Utf8),
         },
         body: JSON.stringify({
             "name": `${playlistName}`,
@@ -201,7 +200,7 @@ export const createPlaylist = async (token, phrase, playlistName, user) => {
     const addTracks = await fetch(`https://api.spotify.com/v1/playlists/${playlistID}/tracks`, {
         method: 'post',
         headers: {
-            'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, passphrase).toString(CryptoJS.enc.Utf8),
+            'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, keys.passphrase).toString(CryptoJS.enc.Utf8),
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
