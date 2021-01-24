@@ -194,7 +194,7 @@ export const createPlaylist = async (token, phrase, playlistName, user) => {
     const response = await addPlaylistToUserAcc.json();
     const playlistID = response.id;
 
-    const addTracks = await fetch(`https://api.spotify.com/v1/playlists/${playlistID}/tracks`, {
+    fetch(`https://api.spotify.com/v1/playlists/${playlistID}/tracks`, {
         method: 'post',
         headers: {
             'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, keys.passphrase).toString(CryptoJS.enc.Utf8),
