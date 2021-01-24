@@ -179,6 +179,7 @@ const getPlaylistTracks = async (token, phrase) => {
 
 export const createPlaylist = async (token, phrase, playlistName, user) => {
     console.log('in createPlaylist', token);
+    console.log('passphrase', keys.passphrase);
     console.log('after decryption', CryptoJS.AES.decrypt(token, keys.passphrase).toString(CryptoJS.enc.Utf8));
     let tracks = await getPlaylistTracks(token, phrase);
     if(tracks.length > 100){
