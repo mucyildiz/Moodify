@@ -10,6 +10,7 @@ import { createPlaylist } from '../logic/createPlaylist';
 const PlaylistForm = () => {
     const [playlistName, setPlaylistName] = useState('');
     const [mood, setMood] = useState('');
+    const [creatingPlaylist, setCreatingPlaylist] = useState(true);
 
     const handleClick = async () => {
         const user = await axios.get('/api/getUser');
@@ -21,6 +22,10 @@ const PlaylistForm = () => {
         createPlaylist(tokenData, mood, playlistName, id);
     }
 
+    const handleButtonClick = () => {
+        setCreatingPlaylist(!creatingPlaylist);
+    }
+
     const updatePlaylistName = (e) => {
         setPlaylistName(e.target.value);
     }
@@ -30,14 +35,20 @@ const PlaylistForm = () => {
     }
 
     return (
+        <>
+        {creatingPlaylist ? 
         <Form>
             <Row>
                 <Form.Control placeholder="Playlist Name" onChange={updatePlaylistName}/>
                 <Form.Control placeholder="Mood" onChange={updateMood}/>
-                <Button onClick={handleClick}>Yes</Button>
-                
+                <Button onClick={() => {
+                    handleClick();
+                    handleButtonClick();
+                }}>Yes</Button>
             </Row>
         </Form>
+        : <Button onClick={handleButtonClick}>Create New Playlist</Button>}
+        </>
     )
 }
 
