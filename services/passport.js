@@ -22,7 +22,6 @@ passport.use(
     },
     async (req, accessToken, refreshToken, profile, done) => {
         req.session.token = CryptoJS.AES.encrypt(accessToken, keys.passphrase).toString();
-        req.session.passphrase = keys.passphrase;
         done(null, {spotifyId: profile.id})
     }
 ));
