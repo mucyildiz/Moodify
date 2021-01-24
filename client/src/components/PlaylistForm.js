@@ -15,9 +15,9 @@ const PlaylistForm = () => {
         const user = await axios.get('/api/getUser');
         const token = await axios.get('/api/getToken');
 
-        const id = user.data.spotifyId;
+        const id = user.data.id;
         const tokenData = token.data;
-        
+
         createPlaylist(tokenData, mood, playlistName, id);
     }
 
