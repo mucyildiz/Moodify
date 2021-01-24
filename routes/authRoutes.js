@@ -13,8 +13,8 @@ module.exports = (app) => {
     app.get(
         '/auth/spotify/callback',
         passport.authenticate('spotify', {
-            successRedirect: 'http://localhost:3000/createPlaylist',
-            failureRedirect: "http://localhost:3000/login"
+            successRedirect: process.env.NODE_ENV === 'production' ? '/createPlaylist' : 'http://localhost:3000/createPlaylist',
+            failureRedirect: process.env.NODE_ENV === 'production' ? "/login" : "http://localhost:3000/login"
         }),
     );
 

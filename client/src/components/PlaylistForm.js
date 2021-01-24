@@ -13,10 +13,12 @@ const PlaylistForm = () => {
 
     const handleClick = async () => {
         const user = await axios.get('/api/getUser');
+        const token = await axios.get('/api/getToken');
+
         const id = user.data.spotifyId;
-        const tokenRes = await axios.get('/api/getToken');
-        const token = tokenRes.data;
-        createPlaylist(token, mood, playlistName, id);
+        const tokenData = token.data;
+        
+        createPlaylist(tokenData, mood, playlistName, id);
     }
 
     const updatePlaylistName = (e) => {
