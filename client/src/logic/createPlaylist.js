@@ -125,7 +125,7 @@ const formatQuery = async (token, phrase) => {
     const numArtists = 5 - length;
     const artists = getRandom(topArtists, numArtists);
     const query = songsFromLibIDs.concat(artists);
-    if(length == 0){
+    if(length === 0){
         return `seed_artists=${query.toString()}`;
     }
     else{
@@ -178,7 +178,7 @@ const getPlaylistTracks = async (token, phrase) => {
 }
 
 const createPlaylist = async (token, phrase, playlistName, user) => {
-    const tracks = await getPlaylistTracks(token, phrase);
+    let tracks = await getPlaylistTracks(token, phrase);
     if(tracks.length > 100){
         tracks = getRandom(tracks, 100);
     }

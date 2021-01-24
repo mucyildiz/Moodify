@@ -1,12 +1,6 @@
 const passport = require('passport');
 
-
-
 module.exports = (app) => {
-
-    app.get('/', (req, res) => {
-        res.send({hi: 'yeah yeah'});
-    })
 
     app.get(
         '/auth/spotify',
@@ -18,9 +12,10 @@ module.exports = (app) => {
 
     app.get(
         '/auth/spotify/callback',
-        passport.authenticate('spotify'),
-        (req, res) => 
-        res.redirect('/')
+        passport.authenticate('spotify', {
+            successRedirect: 'http://localhost:3000/createPlaylist',
+            failureRedirect: "http://localhost:3000/login"
+        }),
     );
 
     app.get(
@@ -37,10 +32,8 @@ module.exports = (app) => {
     )
 
     app.get(
-        '/api/logout', (req, res) => {
-            req.session = null;
-            req.logout();
-            res.redirect('/')
+        '/api/getUser', (req, res) => {
+            res.send(req.user);
         }
     )
 }
