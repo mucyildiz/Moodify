@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
 import Form from 'react-bootstrap/Form';
-import Col from 'react-bootstrap/Col'
 import Row from 'react-bootstrap/Row';
 import './PlaylistForm.css';
 import Button from 'react-bootstrap/Button';
@@ -11,7 +10,6 @@ const PlaylistForm = () => {
     const [playlistName, setPlaylistName] = useState('');
     const [mood, setMood] = useState('');
     const [creatingPlaylist, setCreatingPlaylist] = useState(true);
-    const [validated, setValidated] = useState(false);
 
     const handleClick = async () => {
         const user = await axios.get('/api/getUser').catch(err => alert(err));
@@ -51,16 +49,17 @@ const PlaylistForm = () => {
             <div id="form-container">
             {creatingPlaylist ? 
                 <Form id="form">
+                    <h3 id="instruction">Mood must be one word. For best results pick simple moods like 'sad' or 'happy'.</h3>
                     <div className="flex-top">
                         <Row>
-                        <Form.Control placeholder="Playlist Name" onChange={updatePlaylistName}/>
+                            <Form.Control placeholder="Playlist Name" onChange={updatePlaylistName}/>
                         </Row>
                         <Row>
-                        <Form.Control placeholder="Mood" onChange={updateMood} onKeyDown={handleKeyDown}/>
+                            <Form.Control placeholder="Mood" onChange={updateMood} onKeyDown={handleKeyDown}/>
                         </Row>
                     </div>
                         <Row>
-                        <Button id="submit" onClick={handleClick}>Create Playlist</Button>
+                            <Button id="submit" onClick={handleClick}>Create Playlist</Button>
                         </Row>
                 </Form>
             : 

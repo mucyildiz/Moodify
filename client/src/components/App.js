@@ -1,7 +1,6 @@
 import { BrowserRouter, Route, Redirect } from 'react-router-dom';
-import axios from 'axios';
 import Login from './Login';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PlaylistForm from './PlaylistForm';
 
 const App = () => {

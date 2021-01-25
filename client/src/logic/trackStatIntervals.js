@@ -6,7 +6,7 @@ const trackStatisticIntervals = {
         },
         energy: {
             low: 0,
-            high: .5
+            high: .3
         },
         tempo: {
             low: 0,
@@ -24,7 +24,7 @@ const trackStatisticIntervals = {
         },
         energy: {
             low: 0,
-            high: .5
+            high: .3
         },
         tempo: {
             low: 0,
@@ -59,7 +59,7 @@ const trackStatisticIntervals = {
             high: 1
         },
         energy: {
-            low: .6,
+            low: .75,
             high: 1
         },
         tempo: {
