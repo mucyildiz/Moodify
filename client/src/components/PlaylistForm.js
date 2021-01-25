@@ -25,9 +25,10 @@ const PlaylistForm = () => {
         createPlaylist(tokenData, mood, playlistName, id);
     }
 
+    const allowed = 'abcdefghijklmnopqrstuvwxyz';
     //want inputs to be one word
     const handleKeyDown = (e) => {
-        if(e.key === " "){
+        if(e.key === " " || (!allowed.includes(e.key) && e.key !== 'Backspace')){
             e.preventDefault();
         }
     };

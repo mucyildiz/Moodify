@@ -26,12 +26,6 @@ module.exports = (app) => {
     )
 
     app.get(
-        '/done', (req, res) => {
-            res.send("Playlist created");
-        }
-    )
-
-    app.get(
         '/api/getUser', (req, res) => {
             res.send(req.user);
         }

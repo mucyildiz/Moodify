@@ -271,10 +271,10 @@ const getPlaylistTracks = async (token, phrase) => {
 
     const playlistSongs = recommendations.concat(libSongs);
     const shuffledPlaylistSongs = shuffle(playlistSongs);
-    const shuffltedPlaylistSongsWithoutDuplicates = shuffledPlaylistSongs.filter((item, pos, self) => {
+    const shuffledPlaylistSongsWithoutDuplicates = shuffledPlaylistSongs.filter((item, pos, self) => {
         return self.indexOf(item) === pos;
     })
-    return shuffltedPlaylistSongsWithoutDuplicates;
+    return shuffledPlaylistSongsWithoutDuplicates;
 }
 
 export const createPlaylist = async (token, phrase, playlistName, user) => {
