@@ -262,11 +262,15 @@ const getPlaylistTracks = async (token, phrase) => {
 
     const playlistSongs = recommendations.concat(libSongs);
     const shuffledPlaylistSongs = shuffle(playlistSongs);
-    return shuffledPlaylistSongs;
+    const shuffltedPlaylistSongsWithoutDuplicates = shuffledPlaylistSongs.filter((item, pos, self) => {
+        return self.indexOf(item) === pos;
+    })
+    return shuffltedPlaylistSongsWithoutDuplicates;
 }
 
 export const createPlaylist = async (token, phrase, playlistName, user) => {
     let tracks = await getPlaylistTracks(token, phrase);
+    //this is probably never gonna happen but just in case, we dont want playlists to be too too long
     if(tracks.length > 100){
         tracks = getRandom(tracks, 100);
     }
