@@ -11,20 +11,28 @@ const PlaylistForm = () => {
     const [playlistName, setPlaylistName] = useState('');
     const [mood, setMood] = useState('');
     const [creatingPlaylist, setCreatingPlaylist] = useState(true);
+    const [validated, setValidated] = useState(false);
 
     const handleClick = async () => {
-        const user = await axios.get('/api/getUser');
-        const token = await axios.get('/api/getToken');
+        const user = await axios.get('/api/getUser').catch(err => alert(err));
+        const token = await axios.get('/api/getToken').catch(err => alert(err));
 
         const id = user.data.id;
         const tokenData = token.data;
-
+        if(playlistName.trim() === "" || mood === ""){
+            alert('Playlist Name and Mood must both be filled in.')
+            return;
+        }
+        setCreatingPlaylist(!creatingPlaylist);
         createPlaylist(tokenData, mood, playlistName, id);
     }
 
-    const handleButtonClick = () => {
-        setCreatingPlaylist(!creatingPlaylist);
-    }
+    //want inputs to be one word
+    const handleKeyDown = (e) => {
+        if(e.key === " "){
+            e.preventDefault();
+        }
+    };
 
     const updatePlaylistName = (e) => {
         setPlaylistName(e.target.value);
@@ -34,21 +42,35 @@ const PlaylistForm = () => {
         setMood(e.target.value)
     }
 
+    const handleNewPlaylistClick = () => {
+        setCreatingPlaylist(!creatingPlaylist);
+    }
+
     return (
-        <>
-        {creatingPlaylist ? 
-        <Form>
-            <Row>
-                <Form.Control placeholder="Playlist Name" onChange={updatePlaylistName}/>
-                <Form.Control placeholder="Mood" onChange={updateMood}/>
-                <Button onClick={() => {
-                    handleClick();
-                    handleButtonClick();
-                }}>Yes</Button>
-            </Row>
-        </Form>
-        : <Button onClick={handleButtonClick}>Create New Playlist</Button>}
-        </>
+        <div id="page-container">
+            <div id="form-container">
+            {creatingPlaylist ? 
+                <Form id="form">
+                    <div className="flex-top">
+                        <Row>
+                        <Form.Control placeholder="Playlist Name" onChange={updatePlaylistName}/>
+                        </Row>
+                        <Row>
+                        <Form.Control placeholder="Mood" onChange={updateMood} onKeyDown={handleKeyDown}/>
+                        </Row>
+                    </div>
+                        <Row>
+                        <Button id="submit" onClick={handleClick}>Create Playlist</Button>
+                        </Row>
+                </Form>
+            : 
+            <>
+            <h1 className="flex-top message" >Enjoy!</h1>
+            <Button id="submit" onClick={handleNewPlaylistClick}>Create New Playlist</Button>
+            </>
+            }
+            </div>
+        </div>
     )
 }
 

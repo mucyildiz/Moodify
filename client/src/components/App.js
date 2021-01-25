@@ -1,6 +1,5 @@
 import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import axios from 'axios';
-import { createPlaylist } from '../logic/createPlaylist';
 import Login from './Login';
 import React, { useState, useEffect } from 'react';
 import PlaylistForm from './PlaylistForm';
