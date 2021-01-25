@@ -25,10 +25,6 @@ module.exports = (app) => {
         }
     )
 
-    app.get('/api/getpassphrase', (req, res) => {
-        res.send(req.session.passphrase);
-    })
-
     app.get(
         '/done', (req, res) => {
             res.send("Playlist created");
