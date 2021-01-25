@@ -8,10 +8,11 @@ const calmIntervals = intervals.trackStatisticIntervals.calm;
 const happyIntervals = intervals.trackStatisticIntervals.happy;
 const energeticIntervals = intervals.trackStatisticIntervals.energetic;
 const angryIntervals = intervals.trackStatisticIntervals.angry;
+const loveIntervals = intervals.trackStatisticIntervals.love;
 
 const fetchSynonyms = async (word) => {
-    const res = await fetch(`https://dictionaryapi.com/api/v3/references/thesaurus/json/${word}?key=${keys.thesaurus}`).catch(err => alert(err));
-    const json = await res.json().catch(err => alert(err));
+    const res = await fetch(`https://dictionaryapi.com/api/v3/references/thesaurus/json/${word}?key=${keys.thesaurus}`);
+    const json = await res.json().catch(err => {throw new Error('could not fetch from thesaurus')});
     let synonyms = [];
     try{
         synonyms = json[0].meta.syns;
@@ -22,24 +23,36 @@ const fetchSynonyms = async (word) => {
     return synonyms;
 }
 
-const findMood = async (word) => {
-    word = word.toLowerCase();
-    const moods = ['sad', 'calm', 'energetic', 'happy', 'angry'];
-    if(moods.includes(word)){
-        return moods.indexOf(word);
+const findMood = async (word, tracker) => {
+    let foundMood;
+    if(tracker === 4){
+        return -1;
     }
-    // we make secondary array in case first one doesn't find any matches - will slow down and make more api calls but itll be more accurate
-    let moreSynonyms = [];
-    const synonyms = await fetchSynonyms(word).catch(err => alert(err));
+    word = word.toLowerCase();
+    const moods = ['sad', 'calm', 'energ', 'happy', 'angry', 'love'];
+    const isMatch = (word) => {
+        for(let mood of moods){
+            if(word.includes(mood)){
+                foundMood = mood;
+            }
+        }
+    }
+    isMatch(word);
+    if(foundMood){
+        return moods.indexOf(foundMood);
+    }
+    const synonyms = await fetchSynonyms(word);
     if(synonyms === -1){
         return -1;
     }
+    let moreSynonyms = [];
     for(let synonymArray of synonyms){
         // max 10 synonyms per array to limit number of api calls, 10 should be more than enough anyway
         let numSynonyms = 0;
         for(let synonym of synonymArray){
-            if(moods.includes(synonym)){
-                return moods.indexOf(synonym);
+            isMatch(synonym);
+            if(foundMood){
+                return moods.indexOf(foundMood);
             }
             if(numSynonyms < 10){
                 moreSynonyms.push(synonym);
@@ -48,44 +61,35 @@ const findMood = async (word) => {
         }
     }
     for(let synonym of moreSynonyms){
-        const secondarySynonymArrays = await fetchSynonyms(synonym).catch(err => alert(err));
-        for(let secondarySynonymArray of secondarySynonymArrays){
-            for(let secondarySynonym of secondarySynonymArray){
-                if(moods.includes(secondarySynonym)){
-                    return moods.indexOf(secondarySynonym);
-                }
-            }
-        }
+        return findMood(synonym, tracker+1);
     }
-    return -1;
+
 }
-
-
 const getResponse = async (url, token) => {
     const response = await fetch(url, {
         method: 'get',
         headers: {
             'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, keys.passphrase).toString(CryptoJS.enc.Utf8),
         }
-    }).catch(err => alert(err));
-    const json = await response.json().catch(err => alert(err));
+    }).catch(err => {throw new Error('couldnt fetch')});
+    const json = await response.json().catch(err => {throw new Error('could not fetch response')});
     return json;
 }
 
-const getUserTracks = async (token) => {
-    const tracks = await getResponse('https://api.spotify.com/v1/me/tracks?limit=50', token).catch(err => alert(err));
+export const getUserTracks = async (token) => {
+    const tracks = await getResponse('https://api.spotify.com/v1/me/tracks?limit=50', token);
     const userTracksIDs = tracks['items'].map(obj => obj.track.id);
     return userTracksIDs;
 }
 
 const getUserTopArtists = async (token) => {
-    const topArtists = await getResponse('https://api.spotify.com/v1/me/top/artists', token).catch(err => alert(err));
+    const topArtists = await getResponse('https://api.spotify.com/v1/me/top/artists', token);
     const topArtistsIDs = topArtists['items'].map(obj => obj.id);
     return topArtistsIDs
 }
 
 const getUserTopTracks = async (token) => {
-    const topUserTracks = await getResponse('https://api.spotify.com/v1/me/top/tracks?limit=50', token).catch(err => alert(err));
+    const topUserTracks = await getResponse('https://api.spotify.com/v1/me/top/tracks?limit=50', token);
     const topUserTracksIDs = topUserTracks['items'].map(obj => obj.id);
     return topUserTracksIDs;
 }
@@ -98,10 +102,12 @@ const returnMoodObject = (mood) => {
             return calmIntervals;
         case 'happy':
             return happyIntervals;
-        case 'energetic':
+        case 'energ':
             return energeticIntervals;
         case 'angry':
             return angryIntervals;
+        case 'love':
+            return loveIntervals;
         default:
             return false;
     }
@@ -128,8 +134,9 @@ const categorizeMoodOfSong = (dance, energy, tempo, valence) => {
     const isSad = inspectTrack('sad')
     const isCalm = inspectTrack('calm')
     const isHappy = inspectTrack('happy');
-    const isEnergetic = inspectTrack('energetic');
+    const isEnergetic = inspectTrack('energ');
     const isAngry = inspectTrack('angry');
+    const isLove = inspectTrack('love');
 
     //IMPORTANT: isSad should come before isCalm because calm can be sad but sad isnt calm
     //these numbers have to correspond to their index in moods in findMood()
@@ -148,6 +155,9 @@ const categorizeMoodOfSong = (dance, energy, tempo, valence) => {
     if(isAngry){
         return 4;
     }
+    if(isLove){
+        return 5;
+    }
     return -1;
 }
 
@@ -160,10 +170,10 @@ const getMoodScoreOfSong = (track) => {
 }
 
 const getSongsThatFitMoodFromUserLibrary = async (token, phrase) => {
-    const moodScore = await findMood(phrase).catch(err => alert(err));
+    const moodScore = await findMood(phrase);
 
-    const userTracksIDs = await getUserTracks(token).catch(err => alert(err));
-    const userTopTracksIDs = await getUserTopTracks(token).catch(err => alert(err));
+    const userTracksIDs = await getUserTracks(token);
+    const userTopTracksIDs = await getUserTopTracks(token);
     const userAllTracksIDs = userTracksIDs.concat(userTopTracksIDs);
 
     const userAllTracksIDsAsString = userAllTracksIDs.toString();
@@ -173,9 +183,9 @@ const getSongsThatFitMoodFromUserLibrary = async (token, phrase) => {
         headers: {
             'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, keys.passphrase).toString(CryptoJS.enc.Utf8)
         }
-    }).catch(err => alert(err));
+    });
 
-    const analyses = await tracksAnalysis.json().catch(err => alert(err));
+    const analyses = await tracksAnalysis.json().catch(err => {throw new Error('could not analyze tracks')});
     const songAnalyses = analyses["audio_features"];
     const songsThatFitMood = songAnalyses.filter(track => getMoodScoreOfSong(track) === moodScore);
     return songsThatFitMood;
@@ -198,18 +208,18 @@ const getRandom = (arr, n) => {
 
 //formatting query so we can get the max of 5 possible seeds to best get recommended tracks
 const formatQuery = async (token, phrase) => {
-    const moods = ['sad', 'calm', 'energetic', 'happy', 'angry'];
+    const moods = ['sad', 'calm', 'energ', 'happy', 'angry'];
     let URLquery = '';
-    const moodScore = await findMood(phrase).catch(err => alert(err));
+    const moodScore = await findMood(phrase);
     
-    const songsFromLibThatFitMood = await getSongsThatFitMoodFromUserLibrary(token, phrase).catch(err => alert(err));
+    const songsFromLibThatFitMood = await getSongsThatFitMoodFromUserLibrary(token, phrase);
     const songsFromLibIDs = songsFromLibThatFitMood.map(song => song.id)
     const length = songsFromLibIDs.length;
     if(length >= 5){
         const truncatedSongsArray = getRandom(songsFromLibIDs, 5);
         return `seed_tracks=${truncatedSongsArray.toString()}`;
     }
-    const topArtists = await getUserTopArtists(token).catch(err => alert(err));
+    const topArtists = await getUserTopArtists(token);
     const numArtists = 5 - length;
     const artists = getRandom(topArtists, numArtists);
     const query = songsFromLibIDs.concat(artists);
@@ -232,14 +242,14 @@ const formatQuery = async (token, phrase) => {
 
 const getUserRecommendations = async (token, phrase) => {
 
-    const query = await formatQuery(token, phrase).catch(err => alert(err));
+    const query = await formatQuery(token, phrase).catch(err => {throw new Error('could not query')});
     const recResponse = await fetch(`https://api.spotify.com/v1/recommendations?${query}`, {
         method: 'get',
         headers: {
             'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, keys.passphrase).toString(CryptoJS.enc.Utf8),
         }
-    }).catch(err => alert(err));
-    const recommendations = await recResponse.json().catch(err => alert(err));
+    });
+    const recommendations = await recResponse.json().catch(err => {throw new Error('could not get recommendations')});
     return recommendations;
 }
 
@@ -264,10 +274,10 @@ const shuffle = (array) => {
   }
 
 const getPlaylistTracks = async (token, phrase) => {
-    const recommendationsJSON = await getUserRecommendations(token, phrase).catch(err => alert(err));
+    const recommendationsJSON = await getUserRecommendations(token, phrase)
     const recommendations = recommendationsJSON["tracks"].map(recommendation => recommendation.uri);
 
-    const libSongsJSON = await getSongsThatFitMoodFromUserLibrary(token, phrase).catch(err => alert(err));
+    const libSongsJSON = await getSongsThatFitMoodFromUserLibrary(token, phrase);
     const libSongs = libSongsJSON.map(song => song.uri);
 
     const playlistSongs = recommendations.concat(libSongs);
@@ -279,7 +289,7 @@ const getPlaylistTracks = async (token, phrase) => {
 }
 
 export const createPlaylist = async (token, phrase, playlistName, user) => {
-    let tracks = await getPlaylistTracks(token, phrase).catch(err => alert(err));
+    let tracks = await getPlaylistTracks(token, phrase);
     //we dont want playlists to be too too long, this really only happens when a mood isnt recognized so all songs are fair play
     if(tracks.length > 30){
         tracks = getRandom(tracks, 30);
@@ -292,8 +302,8 @@ export const createPlaylist = async (token, phrase, playlistName, user) => {
         body: JSON.stringify({
             "name": `${playlistName}`,
         })
-    }).catch(err => alert(err));
-    const response = await addPlaylistToUserAcc.json().catch(err => alert(err));
+    });
+    const response = await addPlaylistToUserAcc.json().catch(err => {throw new Error('could not initialize playlist')});
     const playlistID = response.id;
 
     fetch(`https://api.spotify.com/v1/playlists/${playlistID}/tracks`, {
@@ -305,5 +315,7 @@ export const createPlaylist = async (token, phrase, playlistName, user) => {
         body: JSON.stringify({
             "uris": tracks,
         })
-    })
+    }).catch((err) => {
+        throw new Error('could not post tracks');
+    });
 }

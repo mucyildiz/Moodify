@@ -89,6 +89,24 @@ const trackStatisticIntervals = {
             high: .6
         }
     },
+    love: {
+        dance: {
+            low: 0,
+            high: .5
+        },
+        energy: {
+            low: 0,
+            high: .5,
+        },
+        tempo: {
+            low: 0,
+            high: 120
+        },
+        valence: {
+            low: .6,
+            high: 1,
+        }
+    }
     
 }
 

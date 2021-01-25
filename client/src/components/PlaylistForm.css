@@ -51,10 +51,11 @@ input {
     border-right-style: hidden;
     border-left-style: hidden;
     border-bottom-style: groove;
-    font-size: 20px;
+    font-size: 18px;
     margin-bottom: 10px;
     background: transparent;
     color: white;
+    font-family: 'Times New Roman', serif;
   }
   
 input:focus {

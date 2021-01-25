@@ -10,19 +10,25 @@ const PlaylistForm = () => {
     const [playlistName, setPlaylistName] = useState('');
     const [mood, setMood] = useState('');
     const [creatingPlaylist, setCreatingPlaylist] = useState(true);
+    const [isError, setIsError] = useState(false);
 
     const handleClick = async () => {
-        const user = await axios.get('/api/getUser').catch(err => alert(err));
-        const token = await axios.get('/api/getToken').catch(err => alert(err));
+        const user = await axios.get('/api/getUser').catch(err => {throw new Error('No user')});
+        const token = await axios.get('/api/getToken').catch(err => {throw new Error('no Token')});
+
+
 
         const id = user.data.id;
         const tokenData = token.data;
-        if(playlistName.trim() === "" || mood === ""){
-            alert('Playlist Name and Mood must both be filled in.')
+
+        if(playlistName.trim() === "" || mood.length <= 1){
+            alert('Playlist Name and Mood must both be filled in. Mood must be a full word.')
             return;
         }
-        setCreatingPlaylist(!creatingPlaylist);
-        createPlaylist(tokenData, mood, playlistName, id);
+        
+        createPlaylist(tokenData, mood, playlistName, id).then(setCreatingPlaylist(!creatingPlaylist)).catch(() => {setIsError(true)});
+
+
     }
 
     const allowed = 'abcdefghijklmnopqrstuvwxyz';
@@ -42,35 +48,53 @@ const PlaylistForm = () => {
     }
 
     const handleNewPlaylistClick = () => {
-        setPlaylistName('');
-        setMood('');
         setCreatingPlaylist(!creatingPlaylist);
+        setIsError(false);
     }
 
     return (
         <div id="page-container">
             <div id="form-container">
-            {creatingPlaylist ? 
+            {creatingPlaylist || isError ? 
                 <Form id="form">
-                    <h3 id="instruction">Mood must be one word. For best results pick simple moods like 'sad' or 'happy'.</h3>
-                    <div className="flex-top">
+                    
+                        {isError && !creatingPlaylist ? 
+                        <>
+                        <h3 id="instruction">
+                        There was an error somewhere, you might need to login again by pressing the button below.
+                        </h3>
                         <Row>
-                            <Form.Control placeholder="Playlist Name" onChange={updatePlaylistName}/>
+                            <a href="/auth/spotify">
+                                <Button id="submit" >Retry Login</Button>
+                            </a>
                         </Row>
-                        <Row>
-                            <Form.Control placeholder="Mood" onChange={updateMood} onKeyDown={handleKeyDown}/>
-                        </Row>
-                    </div>
-                        <Row>
-                            <Button id="submit" onClick={handleClick}>Create Playlist</Button>
-                        </Row>
+                        </>
+                        :
+                        <>
+                        <h3 id="instruction">
+                        Mood must be one word. For best results pick simple moods like 'sad' or 'happy'.
+                        </h3>
+                        <div className="flex-top">
+                            <Row>
+                                <Form.Control placeholder="PLAYLIST NAME" onChange={updatePlaylistName}/>
+                            </Row>
+                            <Row>
+                                <Form.Control placeholder="MOOD" onChange={updateMood} onKeyDown={handleKeyDown}/>
+                            </Row>
+                        </div>
+                            <Row>
+                                <Button id="submit" onClick={handleClick}>Create Playlist</Button>
+                            </Row>
+
+                        </>
+                        }
                 </Form>
-            : 
-            <>
-            <h1 className="flex-top message" >Enjoy!</h1>
-            <Button id="submit" onClick={handleNewPlaylistClick}>Create New Playlist</Button>
-            </>
-            }
+                : 
+                <>
+                    <h1 className="flex-top message" >Enjoy!</h1>
+                    <Button id="submit" onClick={handleNewPlaylistClick}>Create New Playlist</Button>
+                </>
+                }
             </div>
         </div>
     )
