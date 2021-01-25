@@ -23,6 +23,7 @@ const fetchSynonyms = async (word) => {
 }
 
 const findMood = async (word) => {
+    word = word.toLowerCase();
     const moods = ['sad', 'calm', 'energetic', 'happy', 'angry'];
     if(moods.includes(word)){
         return moods.indexOf(word);

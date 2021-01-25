@@ -28,7 +28,7 @@ const PlaylistForm = () => {
     const allowed = 'abcdefghijklmnopqrstuvwxyz';
     //want inputs to be one word
     const handleKeyDown = (e) => {
-        if(e.key === " " || (!allowed.includes(e.key) && e.key !== 'Backspace')){
+        if(e.key === " " || (!allowed.includes(e.key.toLowerCase()) && e.key !== 'Backspace')){
             e.preventDefault();
         }
     };
