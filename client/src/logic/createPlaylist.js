@@ -1,9 +1,54 @@
-const Sentiment = require('sentiment');
-const sentiment = new Sentiment();
 const keys = require('../config/keys.js');
 const CryptoJS = require('crypto-js');
+const fetch = require('node-fetch');
+const intervals = require('./trackStatIntervals.js');
+const sadIntervals = intervals.trackStatisticIntervals.sad;
+const calmIntervals = intervals.trackStatisticIntervals.calm;
+const happyIntervals = intervals.trackStatisticIntervals.happy;
+const energeticIntervals = intervals.trackStatisticIntervals.energetic;
+const angryIntervals = intervals.trackStatisticIntervals.angry;
 
-const analyzeSentiment = (phrase) => sentiment.analyze(phrase).score;
+const fetchSynonyms = async (word) => {
+    const res = await fetch(`https://dictionaryapi.com/api/v3/references/thesaurus/json/${word}?key=${keys.thesaurus}`)
+    const json = await res.json();
+    const synonyms = json[0].meta.syns;
+    return synonyms;
+}
+
+const findMood = async (word) => {
+    const moods = ['sad', 'calm', 'energetic', 'happy', 'angry'];
+    if(moods.includes(word)){
+        return moods.indexOf(word);
+    }
+    // we make secondary array in case first one doesn't find any matches - will slow down and make more api calls but itll be more accurate
+    let moreSynonyms = [];
+    const synonyms = await fetchSynonyms(word);
+    for(let synonymArray of synonyms){
+        // max 10 synonyms per array to limit number of api calls, 10 should be more than enough anyway
+        let numSynonyms = 0;
+        for(let synonym of synonymArray){
+            if(moods.includes(synonym)){
+                return moods.indexOf(synonym);
+            }
+            if(numSynonyms < 10){
+                moreSynonyms.push(synonym);
+                numSynonyms++;
+            }
+        }
+    }
+    for(let synonym of moreSynonyms){
+        const secondarySynonymArrays = await fetchSynonyms(synonym);
+        for(let secondarySynonymArray of secondarySynonymArrays){
+            for(let secondarySynonym of secondarySynonymArray){
+                if(moods.includes(secondarySynonym)){
+                    return moods.indexOf(secondarySynonym);
+                }
+            }
+        }
+    }
+    return -1;
+}
+
 
 const getResponse = async (url, token) => {
     const response = await fetch(url, {
@@ -34,49 +79,77 @@ const getUserTopTracks = async (token) => {
     return topUserTracksIDs;
 }
 
-/* 
-Mood considers valence with an interval of [0, 1]. This interval is then translated to a integer value between 0 and 3
-*/
-const convertSentimentScoreToMoodScore = async (phrase) => {
-    let moodScore = analyzeSentiment(phrase);
-    //-20 is treated the same as -5 so set a limit on the interval that way we can convert it easier
-    if(moodScore < -5){
-        moodScore = -5;
+const returnMoodObject = (mood) => {
+    switch(mood){
+        case 'sad':
+            return sadIntervals;
+        case 'calm':
+            return calmIntervals;
+        case 'happy':
+            return happyIntervals;
+        case 'energetic':
+            return energeticIntervals;
+        case 'angry':
+            return angryIntervals;
+        default:
+            return false;
     }
-    if(moodScore > 5){
-        moodScore = 5;
-    }
-    //mapping from [-5, 5] to [0, 1] : moodScore - (oldMin) * newMax / oldRange
-    moodScore = (moodScore+5) / 10
-    return categorizeMoodOfSong(moodScore);
 }
 
-const categorizeMoodOfSong = (moodScore) => {
+const categorizeMoodOfSong = (dance, energy, tempo, valence) => {
     const inBetween = (x, min, max) => {
         return x <= max && x >= min;
     }
 
-    if(inBetween(moodScore, 0, .35)){
+    const inspectTrack = (passedInMood) => {
+        const mood = returnMoodObject(passedInMood);
+        if(mood === false){
+            return false;
+        }
+        return inBetween(dance, mood.dance.low, mood.dance.high) && 
+        inBetween(energy, mood.energy.low, mood.energy.high) && 
+        inBetween(tempo, mood.tempo.low, mood.tempo.high) && 
+        inBetween(valence, mood.valence.low, mood.valence.high); 
+    }
+
+
+
+    const isSad = inspectTrack('sad')
+    const isCalm = inspectTrack('calm')
+    const isHappy = inspectTrack('happy');
+    const isEnergetic = inspectTrack('energetic');
+    const isAngry = inspectTrack('angry');
+
+    //IMPORTANT: isSad should come before isCalm because calm can be sad but sad isnt calm
+    //these numbers have to correspond to their index in moods in findMood()
+    if(isSad){
         return 0;
     }
-    if(inBetween(moodScore, .36, .6)){
+    if(isCalm){
         return 1;
     }
-    if(inBetween(moodScore, .61, .8)){
+    if(isEnergetic){
         return 2;
     }
-    else{
+    if(isHappy){
         return 3;
     }
+    if(isAngry){
+        return 4;
+    }
+    return -1;
 }
 
 const getMoodScoreOfSong = (track) => {
-    const score = track["valence"];
-    return categorizeMoodOfSong(score);
+    const dance = track["danceability"];
+    const energy = track["energy"];
+    const tempo = track["tempo"];
+    const valence = track["valence"];
+    return categorizeMoodOfSong(dance, energy, tempo, valence);
 }
 
 const getSongsThatFitMoodFromUserLibrary = async (token, phrase) => {
-    const moodScore = await convertSentimentScoreToMoodScore(phrase);
+    const moodScore = await findMood(phrase);
 
     const userTracksIDs = await getUserTracks(token);
     const userTopTracksIDs = await getUserTopTracks(token);
@@ -114,6 +187,10 @@ const getRandom = (arr, n) => {
 
 //formatting query so we can get the max of 5 possible seeds to best get recommended tracks
 const formatQuery = async (token, phrase) => {
+    const moods = ['sad', 'calm', 'energetic', 'happy', 'angry'];
+    let URLquery = '';
+    const moodScore = await findMood(phrase);
+    
     const songsFromLibThatFitMood = await getSongsThatFitMoodFromUserLibrary(token, phrase);
     const songsFromLibIDs = songsFromLibThatFitMood.map(song => song.id)
     const length = songsFromLibIDs.length;
@@ -126,14 +203,24 @@ const formatQuery = async (token, phrase) => {
     const artists = getRandom(topArtists, numArtists);
     const query = songsFromLibIDs.concat(artists);
     if(length === 0){
-        return `seed_artists=${query.toString()}`;
+        URLquery = `seed_artists=${query.toString()}`;
     }
     else{
-        return `seed_tracks=${songsFromLibIDs.toString()}&seed_artists=${artists.toString()}`
+        URLquery = `seed_tracks=${songsFromLibIDs.toString()}&seed_artists=${artists.toString()}`
     }
+    let mood = returnMoodObject(moods[moodScore]);
+    if(mood === false){
+        return URLquery;
+    }
+    const additionalQuery = `&min_danceability=${mood.dance.low}&max_danceability=${mood.dance.high}
+    &min_energy=${mood.energy.low}&max_energy=${mood.energy.high}&min_tempo=${mood.tempo.low}&max_tempo=${mood.tempo.high}
+    &min_valence=${mood.valence.low}&max_valence=${mood.valence.high}`;
+
+    return URLquery.concat(additionalQuery);
 }
 
 const getUserRecommendations = async (token, phrase) => {
+
     const query = await formatQuery(token, phrase);
     const recResponse = await fetch(`https://api.spotify.com/v1/recommendations?${query}`, {
         method: 'get',
@@ -142,6 +229,7 @@ const getUserRecommendations = async (token, phrase) => {
         }
     })
     const recommendations = await recResponse.json();
+    console.log(recommendations);
     return recommendations;
 }
 

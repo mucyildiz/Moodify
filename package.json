@@ -26,6 +26,8 @@
     "passport": "^0.4.1",
     "passport-spotify": "^1.1.0",
     "sentiment": "^5.0.2",
-    "spotify-web-api-node": "^5.0.0"
+    "spotify-web-api-node": "^5.0.0",
+    "thesaurus": "0.0.1",
+    "thesaurus-com": "^1.2.3"
   }
 }
