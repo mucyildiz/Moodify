@@ -41,6 +41,8 @@ const PlaylistForm = () => {
     }
 
     const handleNewPlaylistClick = () => {
+        setPlaylistName('');
+        setMood('');
         setCreatingPlaylist(!creatingPlaylist);
     }
 
