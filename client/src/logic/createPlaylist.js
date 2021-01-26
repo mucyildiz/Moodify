@@ -218,7 +218,7 @@ const getRandom = (arr, n) => {
 }
 
 //formatting query so we can get the max of 5 possible seeds to best get recommended tracks
-const formatQuery = async (token, phrase) => {
+const formatQuery = async (token, phrase, tryAgain=false) => {
     const moods = ['sad', 'calm', 'energ', 'happy', 'angry'];
     let URLquery = '';
     const moodScore = await findMood(phrase, 0);
@@ -244,9 +244,14 @@ const formatQuery = async (token, phrase) => {
     if(mood === false){
         return URLquery;
     }
-    const additionalQuery = `&min_danceability=${mood.dance.low}&max_danceability=${mood.dance.high}
+    let additionalQuery = `&min_danceability=${mood.dance.low}&max_danceability=${mood.dance.high}
     &min_energy=${mood.energy.low}&max_energy=${mood.energy.high}&min_tempo=${mood.tempo.low}&max_tempo=${mood.tempo.high}
     &min_valence=${mood.valence.low}&max_valence=${mood.valence.high}`;
+
+    // if recommendations is empty we go again with just energy, i think thats the best backup measurement
+    if(tryAgain === true){
+        additionalQuery = `&min_energy=${mood.energy.low}&max_energy=${mood.energy.high}`
+    }
 
     return URLquery.concat(additionalQuery);
 }
@@ -261,6 +266,18 @@ const getUserRecommendations = async (token, phrase) => {
         }
     });
     const recommendations = await recResponse.json().catch(err => {throw new Error('could not get recommendations')});
+    const checkLength = recommendations["tracks"].length;
+    if(checkLength === 0){
+        const newQuery = await formatQuery(token, phrase, true);
+        const newResponse = await fetch(`https://api.spotify.com/v1/recommendations?${newQuery}`, {
+            method: 'get',
+            headers: {
+                'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, keys.passphrase).toString(CryptoJS.enc.Utf8),
+            }
+        });
+        const newRecs = await newResponse.json();
+        return newRecs;
+    }
     return recommendations;
 }
 
