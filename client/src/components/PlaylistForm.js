@@ -91,7 +91,7 @@ const PlaylistForm = () => {
                 </Form>
                 : 
                 <>
-                    <h1 className="flex-top message" >Enjoy!</h1>
+                    <h1 className="flex-top message" >Playlist added to Spotify account. Enjoy!</h1>
                     <Button id="submit" onClick={handleNewPlaylistClick}>Create New Playlist</Button>
                 </>
                 }

@@ -24,9 +24,16 @@ const fetchSynonyms = async (word) => {
 }
 
 const findMood = async (word, tracker) => {
-    let foundMood;
+    let foundMood ='';
     if(tracker === 4){
         return -1;
+    }
+    //edge cases
+    if(word.includes('excite')){
+        word = 'energ';
+    };
+    if(word.includes('moody')){
+        word = 'sad';
     }
     word = word.toLowerCase();
     const moods = ['sad', 'calm', 'energ', 'happy', 'angry', 'love'];
@@ -42,6 +49,7 @@ const findMood = async (word, tracker) => {
         return moods.indexOf(foundMood);
     }
     const synonyms = await fetchSynonyms(word);
+    console.log(synonyms);
     if(synonyms === -1){
         return -1;
     }
@@ -63,8 +71,8 @@ const findMood = async (word, tracker) => {
     for(let synonym of moreSynonyms){
         return findMood(synonym, tracker+1);
     }
-
 }
+
 const getResponse = async (url, token) => {
     const response = await fetch(url, {
         method: 'get',
@@ -76,7 +84,7 @@ const getResponse = async (url, token) => {
     return json;
 }
 
-export const getUserTracks = async (token) => {
+const getUserTracks = async (token) => {
     const tracks = await getResponse('https://api.spotify.com/v1/me/tracks?limit=50', token);
     const userTracksIDs = tracks['items'].map(obj => obj.track.id);
     return userTracksIDs;
@@ -170,7 +178,7 @@ const getMoodScoreOfSong = (track) => {
 }
 
 const getSongsThatFitMoodFromUserLibrary = async (token, phrase) => {
-    const moodScore = await findMood(phrase);
+    const moodScore = await findMood(phrase, 0);
 
     const userTracksIDs = await getUserTracks(token);
     const userTopTracksIDs = await getUserTopTracks(token);
@@ -210,7 +218,7 @@ const getRandom = (arr, n) => {
 const formatQuery = async (token, phrase) => {
     const moods = ['sad', 'calm', 'energ', 'happy', 'angry'];
     let URLquery = '';
-    const moodScore = await findMood(phrase);
+    const moodScore = await findMood(phrase, 0);
     
     const songsFromLibThatFitMood = await getSongsThatFitMoodFromUserLibrary(token, phrase);
     const songsFromLibIDs = songsFromLibThatFitMood.map(song => song.id)
