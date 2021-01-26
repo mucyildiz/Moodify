@@ -6,7 +6,7 @@ const trackStatisticIntervals = {
         },
         energy: {
             low: 0,
-            high: .3
+            high: .5
         },
         tempo: {
             low: 0,
@@ -20,11 +20,11 @@ const trackStatisticIntervals = {
     calm: {
         dance: {
             low: 0,
-            high: 1
+            high: .5
         },
         energy: {
             low: 0,
-            high: .3
+            high: .5
         },
         tempo: {
             low: 0,
@@ -45,25 +45,25 @@ const trackStatisticIntervals = {
             high: 1
         },
         tempo: {
-            low: 120,
+            low: 140,
             high: 1000,
         },
         valence: {
-            low: .8,
+            low: .5,
             high: 1
         }
     },
     energetic: {
         dance: {
-            low: .6,
+            low: .5,
             high: 1
         },
         energy: {
-            low: .75,
+            low: .7,
             high: 1
         },
         tempo: {
-            low: 120,
+            low: 140,
             high: 1000
         },
         valence: {
@@ -103,7 +103,7 @@ const trackStatisticIntervals = {
             high: 120
         },
         valence: {
-            low: .6,
+            low: .5,
             high: 1,
         }
     }

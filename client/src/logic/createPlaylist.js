@@ -154,8 +154,7 @@ const categorizeMoodOfSong = (dance, energy, tempo, valence) => {
     const isAngry = inspectTrack('angry');
     const isLove = inspectTrack('love');
 
-    //IMPORTANT: isSad should come before isCalm because calm can be sad but sad isnt calm
-    //these numbers have to correspond to their index in moods in findMood()
+    //IMPORTANT: isSad should come before isCalm because calm can be sad but not vice versa
     if(isSad){
         return moods.indexOf('sad');
     }
