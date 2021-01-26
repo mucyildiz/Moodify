@@ -4,19 +4,24 @@ import Row from 'react-bootstrap/Row';
 import './PlaylistForm.css';
 import Button from 'react-bootstrap/Button';
 import axios from 'axios';
-import { createPlaylist } from '../logic/createPlaylist';
+import { createPlaylist, findMood } from '../logic/createPlaylist';
 
 const PlaylistForm = () => {
     const [playlistName, setPlaylistName] = useState('');
     const [mood, setMood] = useState('');
     const [creatingPlaylist, setCreatingPlaylist] = useState(true);
     const [isError, setIsError] = useState(false);
+    const [moodFound, setMoodFound] = useState(true);
 
     const handleClick = async () => {
+        setMoodFound(true);
+        const getMood = await findMood(mood, 0);
+        if(getMood === -1){
+            setMoodFound(false);
+            return;
+        }
         const user = await axios.get('/api/getUser').catch(err => {throw new Error('No user')});
         const token = await axios.get('/api/getToken').catch(err => {throw new Error('no Token')});
-
-
 
         const id = user.data.id;
         const tokenData = token.data;
@@ -72,7 +77,10 @@ const PlaylistForm = () => {
                         :
                         <>
                         <h3 id="instruction">
-                        Mood must be one word. For best results pick simple moods like 'sad' or 'happy'.
+                        {moodFound ? 
+                        "Mood must be one word. For best results pick simple moods like 'sad' or 'happy'."
+                        : 
+                        "Mood not found, try a different word."}
                         </h3>
                         <div className="flex-top">
                             <Row>

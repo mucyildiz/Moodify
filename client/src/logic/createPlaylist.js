@@ -25,7 +25,7 @@ const fetchSynonyms = async (word) => {
     return synonyms;
 }
 
-const findMood = async (word, tracker) => {
+export const findMood = async (word, tracker) => {
     let foundMood ='';
     if(tracker === 4){
         return -1;
