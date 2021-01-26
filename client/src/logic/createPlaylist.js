@@ -40,6 +40,10 @@ export const findMood = async (word, tracker) => {
     if(word.includes('chill')){
         word = 'calm';
     }
+    if(word.includes('hype')){
+        word='energetic';
+    }
+    
     word = word.toLowerCase();
     const isMatch = (word) => {
         for(let mood of moods){
