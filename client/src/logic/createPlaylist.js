@@ -28,12 +28,15 @@ const findMood = async (word, tracker) => {
     if(tracker === 4){
         return -1;
     }
-    //edge cases
+    //edge cases that thesaurus cant match
     if(word.includes('excite')){
         word = 'energ';
     };
     if(word.includes('moody')){
         word = 'sad';
+    }
+    if(word.includes('chill')){
+        word = 'calm';
     }
     word = word.toLowerCase();
     const moods = ['sad', 'calm', 'energ', 'happy', 'angry', 'love'];

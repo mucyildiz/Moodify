@@ -56,7 +56,7 @@ input {
     background: transparent;
     color: white;
     font-family: 'Times New Roman', serif;
-  }
+}
   
 input:focus {
     outline: none;
@@ -64,7 +64,7 @@ input:focus {
     border-right-style: hidden;
     border-left-style: hidden;
     border-bottom-style: groove;
-  }
+}
 
 #submit{
     font-size: 16px;
