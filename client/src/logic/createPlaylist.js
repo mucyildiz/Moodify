@@ -10,6 +10,8 @@ const energeticIntervals = intervals.trackStatisticIntervals.energetic;
 const angryIntervals = intervals.trackStatisticIntervals.angry;
 const loveIntervals = intervals.trackStatisticIntervals.love;
 
+const moods = ['sad', 'calm', 'energ', 'happy', 'angry', 'love']
+
 const fetchSynonyms = async (word) => {
     const res = await fetch(`https://dictionaryapi.com/api/v3/references/thesaurus/json/${word}?key=${keys.thesaurus}`);
     const json = await res.json().catch(err => {throw new Error('could not fetch from thesaurus')});
@@ -39,7 +41,6 @@ const findMood = async (word, tracker) => {
         word = 'calm';
     }
     word = word.toLowerCase();
-    const moods = ['sad', 'calm', 'energ', 'happy', 'angry', 'love'];
     const isMatch = (word) => {
         for(let mood of moods){
             if(word.includes(mood)){
@@ -152,22 +153,22 @@ const categorizeMoodOfSong = (dance, energy, tempo, valence) => {
     //IMPORTANT: isSad should come before isCalm because calm can be sad but sad isnt calm
     //these numbers have to correspond to their index in moods in findMood()
     if(isSad){
-        return 0;
+        return moods.indexOf('sad');
     }
     if(isCalm){
-        return 1;
+        return moods.indexOf('calm');
     }
     if(isEnergetic){
-        return 2;
+        return moods.indexOf('energ');
     }
     if(isHappy){
-        return 3;
+        return moods.indexOf('happy');
     }
     if(isAngry){
-        return 4;
+        return moods.indexOf('angry');
     }
     if(isLove){
-        return 5;
+        return moods.indexOf('love');
     }
     return -1;
 }
@@ -219,7 +220,6 @@ const getRandom = (arr, n) => {
 
 //formatting query so we can get the max of 5 possible seeds to best get recommended tracks
 const formatQuery = async (token, phrase, tryAgain=false) => {
-    const moods = ['sad', 'calm', 'energ', 'happy', 'angry'];
     let URLquery = '';
     const moodScore = await findMood(phrase, 0);
     
