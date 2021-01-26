@@ -10,7 +10,7 @@ const trackStatisticIntervals = {
         },
         tempo: {
             low: 0,
-            high: 120
+            high: 140
         },
         valence: {
             low: 0,
@@ -28,7 +28,7 @@ const trackStatisticIntervals = {
         },
         tempo: {
             low: 0,
-            high: 120
+            high: 140
         },
         valence: {
             low: 0,
@@ -81,7 +81,7 @@ const trackStatisticIntervals = {
             high: 1
         },
         tempo: {
-            low: 0,
+            low: 140,
             high: 1000
         },
         valence: {
