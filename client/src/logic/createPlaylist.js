@@ -248,9 +248,9 @@ const formatQuery = async (token, phrase, tryAgain=false) => {
     &min_energy=${mood.energy.low}&max_energy=${mood.energy.high}&min_tempo=${mood.tempo.low}&max_tempo=${mood.tempo.high}
     &min_valence=${mood.valence.low}&max_valence=${mood.valence.high}`;
 
-    // if recommendations is empty we go again with just energy, i think thats the best backup measurement
+    // if recommendations is empty we go again with just energy and valence, i think thats the best backup measurement
     if(tryAgain === true){
-        additionalQuery = `&min_energy=${mood.energy.low}&max_energy=${mood.energy.high}`
+        additionalQuery = `&min_energy=${mood.energy.low}&max_energy=${mood.energy.high}&min_valence=${mood.valence.low}&max_valence=${mood.valence.high}`;
     }
 
     return URLquery.concat(additionalQuery);
@@ -267,7 +267,7 @@ const getUserRecommendations = async (token, phrase) => {
     });
     const recommendations = await recResponse.json().catch(err => {throw new Error('could not get recommendations')});
     const checkLength = recommendations["tracks"].length;
-    if(checkLength === 0){
+    if(checkLength < 8){
         const newQuery = await formatQuery(token, phrase, true);
         const newResponse = await fetch(`https://api.spotify.com/v1/recommendations?${newQuery}`, {
             method: 'get',
