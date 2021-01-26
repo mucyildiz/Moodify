@@ -101,6 +101,12 @@ const getUserTracks = async (token) => {
 const getUserTopArtists = async (token) => {
     const topArtists = await getResponse('https://api.spotify.com/v1/me/top/artists', token);
     const topArtistsIDs = topArtists['items'].map(obj => obj.id);
+    // if theres no top artists then we go in to their liked songs and just get artists from there
+    if(topArtistsIDs.length === 0){
+        const tracks = await getResponse('https://api.spotify.com/v1/me/tracks?limit=20', token);
+        const artists = (tracks['items']).map(obj => obj.track.artists[0].id);
+        return artists;
+    }
     return topArtistsIDs
 }
 
