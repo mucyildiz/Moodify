@@ -57,7 +57,6 @@ export const findMood = async (word, tracker) => {
         return moods.indexOf(foundMood);
     }
     const synonyms = await fetchSynonyms(word);
-    console.log(synonyms);
     if(synonyms === -1){
         return -1;
     }
@@ -95,7 +94,7 @@ const getResponse = async (url, token) => {
 const getUserTracks = async (token) => {
     const tracks = await getResponse('https://api.spotify.com/v1/me/tracks?limit=50', token);
     const userTracksIDs = tracks['items'].map(obj => obj.track.id);
-    return userTracksIDs;
+    return userTracksIDs.filter(track => track !== null);
 }
 
 const getUserTopArtists = async (token) => {
@@ -109,11 +108,11 @@ const getUserTopArtists = async (token) => {
             if(artists.length === 0){
                 const topTracksArtists = await getResponse('https://api.spotify.com/v1/playlists/37i9dQZEVXbMDoHDwVN2tF', token);
                 const topTracksArtistsIDs = topTracksArtists.tracks.items.map(obj => obj.track.artists[0].id);
-                return topTracksArtistsIDs;
+                return topTracksArtistsIDs.filter(artist => artist !== null);
             }
-        return artists;
+        return artists.filter(artist => artist !== null);
     }
-    return topArtistsIDs
+    return topArtistsIDs.filter(artist => artist !== null);
 }
 
 const getUserTopTracks = async (token) => {
@@ -213,7 +212,7 @@ const getSongsThatFitMoodFromUserLibrary = async (token, phrase) => {
     });
 
     const analyses = await tracksAnalysis.json().catch(err => {throw new Error('could not analyze tracks')});
-    const songAnalyses = analyses["audio_features"];
+    const songAnalyses = analyses["audio_features"].filter(song => song !== null);
     const songsThatFitMood = songAnalyses.filter(track => getMoodScoreOfSong(track) === moodScore);
     return songsThatFitMood;
 }
@@ -272,7 +271,6 @@ const formatQuery = async (token, phrase, tryAgain=false) => {
 }
 
 const getUserRecommendations = async (token, phrase) => {
-
     const query = await formatQuery(token, phrase).catch(err => {throw new Error('could not query')});
     const recResponse = await fetch(`https://api.spotify.com/v1/recommendations?${query}`, {
         method: 'get',
