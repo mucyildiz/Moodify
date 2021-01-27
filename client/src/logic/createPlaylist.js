@@ -105,6 +105,12 @@ const getUserTopArtists = async (token) => {
     if(topArtistsIDs.length === 0){
         const tracks = await getResponse('https://api.spotify.com/v1/me/tracks?limit=20', token);
         const artists = (tracks['items']).map(obj => obj.track.artists[0].id);
+            // if user has no saved tracks, then we go to the global top 50 playlist and get artists from there
+            if(artists.length === 0){
+                const topTracksArtists = await getResponse('https://api.spotify.com/v1/playlists/37i9dQZEVXbMDoHDwVN2tF', token);
+                const topTracksArtistsIDs = topTracksArtists.tracks.items.map(obj => obj.track.artists[0].id);
+                return topTracksArtistsIDs;
+            }
         return artists;
     }
     return topArtistsIDs
