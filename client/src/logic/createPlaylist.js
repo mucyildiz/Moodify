@@ -91,34 +91,28 @@ const getResponse = async (url, token) => {
     return json;
 }
 
-const getUserTracks = async (token) => {
-    const tracks = await getResponse('https://api.spotify.com/v1/me/tracks?limit=50', token);
+const getUserTracks = async (token, offset=0) => {
+    const tracks = await getResponse(`https://api.spotify.com/v1/me/tracks?limit=50&offset=${offset}`, token);
     const userTracksIDs = tracks['items'].map(obj => obj.track.id);
     return userTracksIDs.filter(track => track !== null);
 }
 
 const getUserTopArtists = async (token) => {
     const topArtists = await getResponse('https://api.spotify.com/v1/me/top/artists', token);
-    const topArtistsIDs = topArtists['items'].map(obj => obj.id);
+    const musicArtists = topArtists['items'].filter(artist => !artist.genres.includes('meditation'));
+    let artists = musicArtists.map(obj => obj.id);
     // if theres no top artists then we go in to their liked songs and just get artists from there
-    if(topArtistsIDs.length === 0){
+    if(artists.length === 0){
         const tracks = await getResponse('https://api.spotify.com/v1/me/tracks?limit=20', token);
-        const artists = (tracks['items']).map(obj => obj.track.artists[0].id);
+        artists = (tracks['items']).map(obj => obj.track.artists[0].id);
             // if user has no saved tracks, then we go to the global top 50 playlist and get artists from there
             if(artists.length === 0){
                 const topTracksArtists = await getResponse('https://api.spotify.com/v1/playlists/37i9dQZEVXbMDoHDwVN2tF', token);
-                const topTracksArtistsIDs = topTracksArtists.tracks.items.map(obj => obj.track.artists[0].id);
-                return topTracksArtistsIDs.filter(artist => artist !== null);
+                artists = topTracksArtists.tracks.items.map(obj => obj.track.artists[0].id);
             }
-        return artists.filter(artist => artist !== null);
     }
-    return topArtistsIDs.filter(artist => artist !== null);
-}
 
-const getUserTopTracks = async (token) => {
-    const topUserTracks = await getResponse('https://api.spotify.com/v1/me/top/tracks?limit=50', token);
-    const topUserTracksIDs = topUserTracks['items'].map(obj => obj.id);
-    return topUserTracksIDs;
+    return artists.filter(artist => artist !== null);
 }
 
 const returnMoodObject = (mood) => {
@@ -199,8 +193,8 @@ const getSongsThatFitMoodFromUserLibrary = async (token, phrase) => {
     const moodScore = await findMood(phrase, 0);
 
     const userTracksIDs = await getUserTracks(token);
-    const userTopTracksIDs = await getUserTopTracks(token);
-    const userAllTracksIDs = userTracksIDs.concat(userTopTracksIDs);
+    const userMoreTracksIDs = await getUserTracks(token, 50);
+    const userAllTracksIDs = userTracksIDs.concat(userMoreTracksIDs);
 
     const userAllTracksIDsAsString = userAllTracksIDs.toString();
 
@@ -210,6 +204,7 @@ const getSongsThatFitMoodFromUserLibrary = async (token, phrase) => {
             'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, keys.passphrase).toString(CryptoJS.enc.Utf8)
         }
     });
+    
 
     const analyses = await tracksAnalysis.json().catch(err => {throw new Error('could not analyze tracks')});
     const songAnalyses = analyses["audio_features"].filter(song => song !== null);

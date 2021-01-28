@@ -33,7 +33,6 @@ const PlaylistForm = () => {
         
         createPlaylist(tokenData, mood, playlistName, id).then(setCreatingPlaylist(!creatingPlaylist)).catch(() => {setIsError(true)});
 
-
     }
 
     const allowed = 'abcdefghijklmnopqrstuvwxyz';
