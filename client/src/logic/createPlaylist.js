@@ -87,7 +87,7 @@ const getResponse = async (url, token) => {
             'Authorization': 'Bearer ' + CryptoJS.AES.decrypt(token, keys.passphrase).toString(CryptoJS.enc.Utf8),
         }
     }).catch(err => {throw new Error('couldnt fetch')});
-    const json = await response.json().catch(err => {throw new Error('could not fetch response')});
+    const json = await response.json();
     return json;
 }
 
@@ -326,7 +326,7 @@ const getPlaylistTracks = async (token, phrase) => {
 
 export const createPlaylist = async (token, phrase, playlistName, user) => {
     let tracks = await getPlaylistTracks(token, phrase);
-    //we dont want playlists to be too too long, this really only happens when a mood isnt recognized so all songs are fair play
+    //we dont want playlists to be too too long
     if(tracks.length > 30){
         tracks = getRandom(tracks, 30);
     }
