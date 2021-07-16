@@ -1,8 +1,6 @@
 const passport = require('passport');
 const SpotifyStrategy = require('passport-spotify').Strategy;
 const keys = require('../config/keys');
-const CryptoJS = require('crypto-js');
-
 
 passport.serializeUser((user, done) => {
   done(null, user.spotifyId);
@@ -21,8 +19,8 @@ passport.use(
         passReqToCallback: true
     },
     async (req, accessToken, refreshToken, profile, done) => {
-        req.session.token = CryptoJS.AES.encrypt(accessToken, keys.passphrase).toString();
-        done(null, {spotifyId: profile.id})
+      req.session.passport.accessToken = accessToken;
+      done(null, {spotifyId: profile.id})
     }
 ));
 
