@@ -4,34 +4,44 @@ import Row from 'react-bootstrap/Row';
 import './PlaylistForm.css';
 import Button from 'react-bootstrap/Button';
 import axios from 'axios';
-import { createPlaylist, findMood } from '../logic/createPlaylist';
 
 const PlaylistForm = () => {
     const [playlistName, setPlaylistName] = useState('');
     const [mood, setMood] = useState('');
-    const [creatingPlaylist, setCreatingPlaylist] = useState(true);
+    const [creatingPlaylist, setCreatingPlaylist] = useState(false);
     const [isError, setIsError] = useState(false);
     const [moodFound, setMoodFound] = useState(true);
+    const [playlistCreated, setPlaylistCreated] = useState(false);
 
     const handleClick = async () => {
         setMoodFound(true);
-        const getMood = await findMood(mood, 0);
-        if(getMood === -1){
-            setMoodFound(false);
-            return;
-        }
-        const user = await axios.get('/api/getUser').catch(err => {throw new Error('No user')});
-        const token = await axios.get('/api/getToken').catch(err => {throw new Error('no Token')});
-
-        const id = user.data.id;
-        const tokenData = token.data;
 
         if(playlistName.trim() === "" || mood.length <= 1){
             alert('Playlist Name and Mood must both be filled in. Mood must be a full word.')
             return;
         }
-        
-        createPlaylist(tokenData, mood, playlistName, id).then(setCreatingPlaylist(!creatingPlaylist)).catch(() => {setIsError(true)});
+
+        const body = {info: {
+            mood: mood,
+            name: playlistName
+        }};
+
+        try {
+            setCreatingPlaylist(true);
+            await axios.post('/api/create_playlist', body);
+            setCreatingPlaylist(false);
+            setPlaylistCreated(true);
+        }
+        catch(err) {
+            const status = err.response.status;
+            //invalid mood
+            if(status === 400) {
+                setMoodFound(false);
+            }
+            else if(status === 403){
+                setIsError(true);
+            }
+        }
 
     }
 
@@ -52,56 +62,83 @@ const PlaylistForm = () => {
     }
 
     const handleNewPlaylistClick = () => {
-        setCreatingPlaylist(!creatingPlaylist);
+        setCreatingPlaylist(false);
+        setPlaylistCreated(false);
         setIsError(false);
+    }
+
+    const renderLogic = () => {
+        if(isError) {
+            return (
+            <>
+                <h3 id="instruction">
+                    There was an error somewhere, you might need to login again by pressing the button below.
+                </h3>
+                <Row>
+                    <a href="/auth/spotify">
+                        <Button id="submit" >Retry Login</Button>
+                    </a>
+                </Row>
+            </>
+            )
+        }
+        else if(!moodFound) {
+            return(
+                <>
+                <h3 id="instruction">
+                    Mood not found, try a different word.
+                </h3>
+                <div className="flex-top">
+                    <Row>
+                        <Form.Control placeholder="PLAYLIST NAME" onChange={updatePlaylistName}/>
+                    </Row>
+                    <Row>
+                        <Form.Control placeholder="MOOD" onChange={updateMood} onKeyDown={handleKeyDown}/>
+                    </Row>
+                </div>
+                <Row>
+                    <Button id="submit" onClick={handleClick}>Create Playlist</Button>
+                </Row>
+                </>
+            )
+        }
+        else if(creatingPlaylist) {
+            return (
+                <div className="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+            )
+        }
+        else if(playlistCreated) {
+            return (
+                <>
+                <h1 className="flex-top message" >Playlist added to Spotify account. Enjoy!</h1>
+                <Button id="submit" onClick={handleNewPlaylistClick}>Create New Playlist</Button>
+                </>
+            )
+        }
+        return (
+            <>
+            <h3 id="instruction">
+                Mood must be one word. For best results pick simple moods like 'sad' or 'happy'.
+            </h3>
+            <div className="flex-top">
+                <Row>
+                    <Form.Control placeholder="PLAYLIST NAME" onChange={updatePlaylistName}/>
+                </Row>
+                <Row>
+                    <Form.Control placeholder="MOOD" onChange={updateMood} onKeyDown={handleKeyDown}/>
+                </Row>
+            </div>
+            <Row>
+                <Button id="submit" onClick={handleClick}>Create Playlist</Button>
+            </Row>
+            </>
+        )
     }
 
     return (
         <div id="page-container">
             <div id="form-container">
-            {creatingPlaylist || isError ? 
-                <Form id="form">
-                    
-                        {isError && !creatingPlaylist ? 
-                        <>
-                        <h3 id="instruction">
-                        There was an error somewhere, you might need to login again by pressing the button below.
-                        </h3>
-                        <Row>
-                            <a href="/auth/spotify">
-                                <Button id="submit" >Retry Login</Button>
-                            </a>
-                        </Row>
-                        </>
-                        :
-                        <>
-                        <h3 id="instruction">
-                        {moodFound ? 
-                        "Mood must be one word. For best results pick simple moods like 'sad' or 'happy'."
-                        : 
-                        "Mood not found, try a different word."}
-                        </h3>
-                        <div className="flex-top">
-                            <Row>
-                                <Form.Control placeholder="PLAYLIST NAME" onChange={updatePlaylistName}/>
-                            </Row>
-                            <Row>
-                                <Form.Control placeholder="MOOD" onChange={updateMood} onKeyDown={handleKeyDown}/>
-                            </Row>
-                        </div>
-                            <Row>
-                                <Button id="submit" onClick={handleClick}>Create Playlist</Button>
-                            </Row>
-
-                        </>
-                        }
-                </Form>
-                : 
-                <>
-                    <h1 className="flex-top message" >Playlist added to Spotify account. Enjoy!</h1>
-                    <Button id="submit" onClick={handleNewPlaylistClick}>Create New Playlist</Button>
-                </>
-                }
+            {renderLogic()}
             </div>
         </div>
     )
