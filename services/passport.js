@@ -19,7 +19,7 @@ passport.use(
         passReqToCallback: true
     },
     async (req, accessToken, refreshToken, profile, done) => {
-      req.session.passport.accessToken = accessToken;
+      req.session.accessToken = accessToken;
       done(null, {spotifyId: profile.id})
     }
 ));
